@@ -1,11 +1,4 @@
-from typing import List, Dict, AnyStr
-
-from bs4 import BeautifulSoup
 from datetime import date, timedelta
-import re
-"""
-legacy парсеры и константы, будут перенесе
-"""
 
 
 class Date:
