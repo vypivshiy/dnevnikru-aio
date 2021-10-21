@@ -1,0 +1,1 @@
+from dnevnik import Dnevnik
