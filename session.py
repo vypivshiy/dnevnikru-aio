@@ -51,6 +51,7 @@ class Session:
 class DiaryAPI(Session):
     """Класс взаимодействия с дневник.ру"""
     BASE_URI = "https://schools.dnevnik.ru/"
+    USER_URI = "https://dnevnik.ru/userfeed"
     AUTH_URI = "https://login.dnevnik.ru/login"
     CLASS_URI = BASE_URI + "class.aspx"
     SCHEDULES_URI = BASE_URI + "schedules"
@@ -83,6 +84,14 @@ class DiaryAPI(Session):
     def __get_profile_id(html: str) -> str:
         """Полученить id профиля"""
         return Parser.parse_profile_id(html)
+
+    def parse_ids(self):
+        """парсер нужных id для дальнейших запросов"""
+        resp = await self.request_get(self.USER_URI)
+        self.__get_school_id(resp)
+        resp = await resp.text()
+        self._class_id = self.__get_class_id(resp)
+        self._profile_id = self.__get_profile_id(resp)
 
     async def auth(self):
         resp = await self.request_post(self.AUTH_URI, data={"login": self.__login, "password": self.__password})
