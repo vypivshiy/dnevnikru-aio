@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Iterable
 
 
 @dataclass()
@@ -31,4 +31,8 @@ class Day:
 class YearBirthday:
     """Модель календаря именинников"""
     days: List[Day]
+
+    def __iter__(self) -> Iterable[Day]:
+        return iter(self.days)
+
 
