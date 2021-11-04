@@ -24,11 +24,6 @@ class Dnevnik:
         """Авторизация пользователя"""
         return await self.diary_api.auth()
 
-    async def get_schedule_excel(self):
-        """TODO получить файл расписания своей группы за весь семестр с помощью запроса на версию для печати
-        в формате excel"""
-        pass
-
     async def get_class_users(self) -> Users:
         """возвращает список одноклассников с ФИО и ссылкой на профиль (если он зарегистрирован в дневник.ру)"""
         return await self.diary_api.get_class_users()
@@ -105,4 +100,7 @@ class Dnevnik:
         Дату указывать в формате %d.%m.%Y. По умолчанию устанавливается сегодняшняя дата
         """
         return await self.diary_api.get_diary(period)
+
+    async def close(self):
+        await self.diary_api.close()
 
