@@ -1,11 +1,11 @@
 from typing import Optional, AsyncIterable
 
-from aiohttp import ClientResponse, ClientSession
-from aiohttp import ClientConnectionError
+from aiohttp import ClientResponse, ClientSession, ClientConnectionError
 import asyncio
 
 from parsers import Parser, ParserDiary, ParserBirthdayCalendar, ParserUsers
 from models import Diary, YearBirthday, Users
+from exceptions import *
 
 
 class Session:
@@ -85,7 +85,19 @@ class DiaryAPI(Session):
         """Полученить id профиля"""
         return Parser.parse_profile_id(html)
 
-    def parse_ids(self):
+    @property
+    def get_profile_id(self) -> str:
+        return self._profile_id
+
+    @property
+    def get_school_id(self) -> str:
+        return self._school_id
+
+    @property
+    def get_class_id(self) -> str:
+        return self._class_id
+
+    async def parse_ids(self):
         """парсер нужных id для дальнейших запросов"""
         resp = await self.request_get(self.USER_URI)
         self.__get_school_id(resp)
@@ -100,20 +112,7 @@ class DiaryAPI(Session):
             self._class_id = self.__get_class_id(resp)
             self._profile_id = self.__get_profile_id(resp)
             return True
-
-    async def __get_schedule_excel(self):
-        """TODO получить файл расписания своей группы за весь семестр с помощью запроса на версию для печати
-        в формате excel"""
-        """endpoint:
-        https://schools.dnevnik.ru/excel.ashx?&action=gs&school=000&group=456&period=000
-        """
-        pass
-        # resp = await self._request_get(self.BASE_URI + "print.ashx", params={"action": "gs",
-        #                                                                      "school": self._school,
-        #                                                                      "group": self._class_id,
-        #                                                                      "period": ""})
-        # file = await resp.read()
-        # return file
+        return False
 
     async def get_class_users(self) -> Users:
         """возвращает список одноклассников с ФИО и ссылкой на профиль (если он зарегистрирован в дневник.ру)"""
@@ -216,7 +215,10 @@ class DiaryAPI(Session):
         """
         year = period.split(".")[-1]
         url = f"{self.WEEK_DIARY_URI}{self._profile_id}/{self._school_id}/{year}/{period}"
-        resp = await self.request_get(url)
-        resp = await resp.text()
-        model = ParserDiary(resp).gen_model
-        return model
+        try:
+            resp = await self.request_get(url)
+            resp = await resp.text()
+            model = ParserDiary(resp).gen_model
+            return model
+        except ClientConnectionError:
+            raise PageNotFound("Page return 404. Check period input")
