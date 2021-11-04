@@ -1,4 +1,5 @@
 import re
+
 from bs4 import BeautifulSoup
 
 from models import *
@@ -16,23 +17,6 @@ class Parser:
         """Возвращает id профиля"""
         return re.findall(r'"personId":"(\d+)"', page)[0]
 
-    @staticmethod
-    def parse_periods_ids(page: str) -> list:
-        """возвращает список id периодов семестра для получения файлов расписаний.
-        Если ничего не найдено, вернёт пустой список"""
-        """Ожидаемые элементы на получение:
-        <a style="" class="NotSet" href="https://schools.dnevnik.ru/schedules/view.aspx?school=00000&group=123&period=456&year=2077&month=9&day=1">1 семестр</a>
-        
-        <a style="" class="NotSet" href="https://schools.dnevnik.ru/schedules/view.aspx?school=00000&group=123&period=789&year=2077&month=1&day=6">2 семестр</a>
-        """
-        # получение кнопок по семестрам
-        pattern_1 = dict(name="div", class_="tabs")
-
-        soup = BeautifulSoup(page, "lxml")
-        elems = soup.find(**pattern_1).find_all("a")
-        urls = [_ for _ in elems if "семестр" in _.get_text()]
-        periods = [re.findall("period=(\d+)&", i) [0] for i in urls if len(re.findall("period=(\d+)&", i)) == 1]
-        return periods
 
 
 class ParserDiary:
@@ -213,11 +197,12 @@ class ParserUsers:
     PATTERN_USER = {"class_": "u"}
     # количество всех найденных пользователей
     PATTERN_COUNT = {"name": "p", "class_": "found"}
+
     # парсер числа именниников
 
     def __init__(self, page: str):
-        self.soup = BeautifulSoup(page, "lxml") 
-        
+        self.soup = BeautifulSoup(page, "lxml")
+
     def parse(self):
         count = self.soup.find(**self.PATTERN_COUNT)
         count = re.findall(r"(\d+)", count.get_text(strip=True)) if count else None
