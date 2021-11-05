@@ -1,7 +1,7 @@
 import unittest
 from asyncio import get_event_loop
 
-from tests.download_html import *
+from download_html import *
 from parsers import Parser, ParserDiary, ParserUsers, ParserBirthdayCalendar
 from models import *
 
@@ -44,7 +44,7 @@ class TestParsers(unittest.TestCase):
             self.assertIsInstance(day.month, str)
             self.assertIsInstance(day.url, str)
             self.assertTrue(day.url.startswith("http"))
-            self.assertIsInstance(day.month_int(), int)
+            self.assertIsInstance(day.month_int, int)
 
     def test_BirthdayNear(self):
         html = open_html("bday_near.html")
@@ -59,7 +59,7 @@ class TestParsers(unittest.TestCase):
     def test_Diary(self):
         html = open_html("diary.html")
         p = ParserDiary(html)
-        diary = p.gen_model
+        diary = p.create_model
         self.assertIsInstance(diary, Diary)
         self.assertIsInstance(diary.info, Info)
         self.assertIsInstance(diary.info.date, str)

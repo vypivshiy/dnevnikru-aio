@@ -28,7 +28,8 @@ date = getenv("date")
 
 
 class TestBasic(unittest.IsolatedAsyncioTestCase):
-    """Тесты на возвращение объектов обычной авторизации
+    """
+    Тесты на возвращение объектов обычной авторизации
     """
     def setUp(self):
         events.append("setUp")
@@ -44,6 +45,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self) -> None:
         await self.dnevnik.close()
+        self.addAsyncCleanup(self.on_cleanup)
 
     async def test_failAuth(self):
         async with Dnevnik("foobar", "qwerty123") as d:
@@ -76,6 +78,7 @@ class TestBasic(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(f)
         with self.assertRaises(RuntimeError):
             await self.dnevnik.calendar_birthdays()
+        self.addAsyncCleanup(self.on_cleanup)
 
     async def on_cleanup(self):
         events.append("cleanup")
