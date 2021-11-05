@@ -218,7 +218,7 @@ class DiaryAPI(Session):
         try:
             resp = await self.request_get(url)
             resp = await resp.text()
-            model = ParserDiary(resp).gen_model
+            model = ParserDiary(resp).create_model
             return model
         except ClientConnectionError:
             raise PageNotFound("Page return 404. Check period input")

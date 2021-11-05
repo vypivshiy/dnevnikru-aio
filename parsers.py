@@ -4,9 +4,11 @@ from bs4 import BeautifulSoup
 
 from models import *
 
+from typing import Tuple, Dict
+
 
 class Parser:
-
+    """Статичный класс парсера"""
     @staticmethod
     def parse_group_id(page: str) -> str:
         """Возвращает id класса, в котором находится авторизованный пользователь"""
@@ -18,8 +20,9 @@ class Parser:
         return re.findall(r'"personId":"(\d+)"', page)[0]
 
 
-
 class ParserDiary:
+    """Модель парсера для объекта Diary по эндпоинту https://dnevnik.ru/currentprogress/result
+    """
     # status patterns
     PATTERN_STATS = dict(name="h5", class_="h5 h5_bold")
     # элементы строки
@@ -44,18 +47,25 @@ class ParserDiary:
     PATTERN_EMPTY = dict(name="div", class_="progress__empty-block")
 
     def __init__(self, page: str):
-        """Парсер информации по эндпоинту https://dnevnik.ru/currentprogress/result"""
         self.soup = BeautifulSoup(page, "lxml")
 
     @property
-    def parse_info(self) -> tuple:
-        """Получить имя и статус авторизованного пользователя"""
+    def parse_info(self) -> Tuple[str, str, str, str, str]:
+        """Основная информация авторизованного пользователя: ФИО, номер класса, школа, год
+
+        :return: name, school_name, class_name, year, date
+        :rtype: Tuple[str, str, str, str, str]
+        """
         name, school_name, class_name, year, date = self.soup.find(**self.PATTERN_STATS).get_text(strip=True).split(",")
         return name, school_name, class_name, year, date
 
     @property
-    def parse_themes(self) -> tuple:
-        """парсер тем занятий"""
+    def parse_themes(self) -> Tuple[str, str]:
+        """Темы занятий/учебный план
+
+        :return: theme_name, theme_value
+        :rtype: Tuple[str, str]
+        """
         themes = self.soup.find(**self.PATTERN_THEME).find_all(**self.LINES)
         for line in themes:
             name = line.find(**self.NAME).get_text(strip=True)
@@ -63,8 +73,12 @@ class ParserDiary:
             yield name, val
 
     @property
-    def parse_attendance(self) -> tuple:
-        """Парсер посещаемости"""
+    def parse_attendance(self) -> Tuple[str, list]:
+        """Посещаемость
+
+        :return: lesson_name, value
+        :rtype: Tuple[str, list]
+        """
         attendance = self.soup.find(**self.PATTERN_ATTENDANCE).find_all(**self.LINES)
         if attendance:
             for line in attendance:
@@ -75,8 +89,12 @@ class ParserDiary:
             yield "", []
 
     @property
-    def parse_progress(self) -> tuple:
-        """Парсер прогресса"""
+    def parse_progress(self) -> Tuple[str, str, str]:
+        """Прогресс/ успеваемость
+
+        :return: lesson_name, type_work, value
+        :rtype: Tuple[str, str, str]
+        """
         progress = self.soup.find(**self.PATTERN_PROGRESS).find_all(**self.LINES)
         for line in progress:
             names = line.find_all(**self.NAME)
@@ -85,8 +103,12 @@ class ParserDiary:
             yield name, type_, val
 
     @property
-    def parse_schedule(self) -> tuple:
-        """Парсер расписаний"""
+    def parse_schedule(self) -> Tuple[str, tuple]:
+        """Расписание занятий
+
+        :return: day, lessons
+        :rtype: Tuple[str, tuple]
+        """
         schedule = self.soup.find(**self.PATTERN_SCHEDULE).find_all(**self.SCHEDULE_LINE)
         if schedule:
             for line in schedule:
@@ -100,8 +122,12 @@ class ParserDiary:
             yield []
 
     @property
-    def parse_homework(self) -> tuple:
-        """Парсер домашних заданий"""
+    def parse_homework(self) -> Tuple[str, str]:
+        """Домашние задания
+
+        :return: lesson_name, lesson_homework
+        :rtype: Tuple[str, str]
+        """
         homework = self.soup.find(**self.PATTERN_HOMEWORK).find_all(**self.LINES)
         if homework:
             for line in homework:
@@ -112,11 +138,15 @@ class ParserDiary:
             yield []
 
     def __is_empty(self, soup_: BeautifulSoup) -> bool:
-        """TODO возвращает False, если вернёт пустой элемент списка"""
+        """возвращает False, если вернёт пустой элемент списка"""
         return False if soup_.find(**self.PATTERN_EMPTY) else True
 
-    def _create_struct(self):
-        """Метод создания структуры основной информации"""
+    def _create_struct(self) -> Diary:
+        """Метод запуска парсеров и создания структуры дневника
+
+        :return: объект дневника
+        :rtype: Diary
+        """
         info = Info(*self.parse_info)
         themes = []
         attendances = []
@@ -127,29 +157,38 @@ class ParserDiary:
         for name, val in self.parse_themes:
             t = Theme(name=name, theme=val)
             themes.append(t)
+
         for name, vals in self.parse_attendance:
             a = Attendance(name, vals)
             attendances.append(a)
+
         for ball, type_, lesson in self.parse_progress:
             p = Progress(ball, type_, lesson)
             progress.append(p)
+
         for day_name, lessons in self.parse_schedule:
             sc = Schedule(day_name, lessons)
             schedules.append(sc)
+
         for name, work in self.parse_homework:
             hw = Homework(name, work)
             homeworks.append(hw)
+
         return Diary(info=info, themes=themes,
                      attendances=attendances, progress=progress,
                      schedules=schedules, homeworks=homeworks
                      )
 
     @property
-    def gen_model(self) -> Diary:
+    def create_model(self) -> Diary:
+        """wrapper создания объекта дневника"""
         return self._create_struct()
 
 
 class ParserBirthdayCalendar:
+    """Парсер календаря для объекта YearBirthday через
+    эндпоинт https://schools.dnevnik.ru/birthdays.aspx?school=000&view=calendar
+    """
     # календарь
     PATTERN_CALENDAR = {"name": "table", "class_": "calendar"}
     # месяц
@@ -161,6 +200,10 @@ class ParserBirthdayCalendar:
         self.soup = BeautifulSoup(page, "lxml")
 
     def parse(self) -> dict:
+        """Метод запуска поиска дней
+        :return:
+        :rtype: dict
+        """
         calendar_rows = self.soup.find_all(**self.PATTERN_CALENDAR)
         days = dict()
         for cal_row in calendar_rows:
@@ -188,7 +231,7 @@ class ParserBirthdayCalendar:
 
 
 class ParserUsers:
-    """Парсер пользователей"""
+    """Парсер пользователей с различных страниц: от школы до списка именинников"""
     # основная таблица
     PATTERN_TABLE = {"name": "table", "class_": "people grid"}
     # строка таблицы

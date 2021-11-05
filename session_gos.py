@@ -13,25 +13,22 @@ except ImportError:
 
 
 class GosDiary:
-    """Класс создания DiaryAPI после успешной авторизации.
+    """Класс создания Dnevnik после успешной авторизации.
+
     Для его работы требуется передать login, password, region url
 
-
-    example:
-        import asyncio
-        from session_gos import GosDiary
-        from gos_regions import KIROV_REGION
-
-        async def main():
-            login, password = "79123456789", "qwerty123"
-            gos_d = GosDiary(login, password, region_url=KIROV_REGION)
-            diary = await gos_d.auth()
-            async with diary as d:
-                await d.get_class_users()
-                # ... далее работа аналогична с классом Dnevnik
-
-
-        asyncio.get_event_loop().run_until_complete(main())
+    :example:
+    >>> import asyncio
+    >>> from session_gos import GosDiary
+    >>> from gos_regions import KIROV_REGION  # импортируйте свой регион, этот для примера
+    >>> async def main():
+    ...     login, password = "71234567890", "qwerty123"
+    ...     gos_d = GosDiary(login, password, region_url=KIROV_REGION)
+    ...     diary = await gos_d.auth()
+    ...     async with diary as d:
+    ...         await d.get_class_users()
+    ...         # ... далее работа аналогична с классом Dnevnik
+    ...asyncio.get_event_loop().run_until_complete(main())
     """
     def __init__(self, login, password, region_url):
         self.__login: str = login
@@ -39,8 +36,7 @@ class GosDiary:
         self.region_url: str = region_url
 
     async def auth(self) -> Dnevnik:
-        """Авторизация через госуслуги с помощи эмуляции браузера.
-
+        """Авторизация через госуслуги с помощью эмуляции браузера.
 
         Сначала переходит на страницу региона, затем на госуслуги, там происходит авторизация с получением
         необходимых cookies для дальнейшей работы.
@@ -57,6 +53,7 @@ class GosDiary:
             await page.click("a.login__pubservices-link:nth-child(1)")
             await page.fill("#login", self.__login)
             await page.fill("#password", self.__password)
+            await sleep(0.3)
             await page.click("#loginByPwdButton")
             # здесь должна быть дополнительная проверка на 2FA ответ, нужна помощь в получении нужных полей,
             # так как нет аккаунта!
@@ -70,4 +67,3 @@ class GosDiary:
                 return d
             await browser.close()
             raise ClientConnectionError("Auth error")
-

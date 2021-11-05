@@ -14,6 +14,21 @@ Diary:
 
 @dataclass()
 class Info:
+    """Объект информации о пользователе.
+
+    name: Фио
+
+
+    school_name: название школы
+
+
+    class_name: номер класса
+
+
+    year: учебный год
+
+    date: дата дневника
+    """
     name: str
     school_name: str
     class_name: str
@@ -26,6 +41,13 @@ class Info:
 
 @dataclass()
 class Homework:
+    """Объект домашнего задания
+
+    lesson: предмет
+
+
+    homework: домашнее задание
+    """
     lesson: str
     homework: str
 
@@ -35,15 +57,34 @@ class Homework:
 
 @dataclass()
 class Schedule:
+    """Объект расписаний
+
+    day: название дня
+
+    items: кортеж уроков
+    """
     day: str
     items: Tuple[str]
 
     def __str__(self):
         return f"{self.day}\n" + "\n".join([i for i in self.items])
 
+    def __iter__(self):
+        return iter(self.items)
+
 
 @dataclass()
 class Progress:
+    """Объект успеваемости
+
+    grade: оценка
+
+
+    type: тип (ответ, самостоятельная, контрольная)
+
+
+    lesson: название урока
+    """
     grade: int
     type: str
     lesson: str
@@ -54,6 +95,13 @@ class Progress:
 
 @dataclass()
 class Attendance:
+    """Объект посещаемости
+
+    date: дата
+
+
+    stats: список пропусков/посещений
+    """
     date: str
     stats: List[str]
 
@@ -63,7 +111,13 @@ class Attendance:
 
 @dataclass()
 class Theme:
-    """тема урока"""
+    """тема урока
+
+    name: название урока
+
+
+    theme: тема урока
+    """
     name: str
     theme: str
 
@@ -73,42 +127,31 @@ class Theme:
 
 @dataclass()
 class Diary:
-    """Модель дневника"""
+    """Объект дневника
+
+    info: Info - информация о пользователе
+
+
+    themes: List[Theme] - список тем уроков
+
+
+    attendances: List[Attendance] - список посещаемости
+
+
+    progress: List[Progress] - список успеваемости
+
+
+    schedules: List[Schedule] - список расписания
+
+
+    homeworks: List[Homework] - список домашних заданий
+    """
     info: Info
     themes: List[Theme]
     attendances: List[Attendance]
     progress: List[Progress]
     schedules: List[Schedule]
     homeworks: List[Homework]
-
-    @property
-    def get_homework(self) -> Iterable[Homework]:
-        hw: Homework
-        for hw in self.homeworks:
-            yield hw
-
-    @property
-    def get_schedules(self) -> Iterable[Schedule]:
-        sc: Schedule
-        for sc in self.schedules:
-            yield sc
-
-    @property
-    def get_attendances(self):
-        for at in self.attendances:
-            yield at
-
-    @property
-    def get_progress(self) -> Iterable[Progress]:
-        pr: Progress
-        for pr in self.progress:
-            yield pr
-
-    @property
-    def get_themes(self) -> Iterable[Theme]:
-        th: Theme
-        for th in self.themes:
-            yield th
 
     def __str__(self):
         themes = "\n".join([_.__str__() for _ in self.themes])
@@ -137,4 +180,3 @@ Schedules:
 Homeworks:
 {"_"*30}
 {homeworks}"""
-
