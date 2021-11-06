@@ -2,9 +2,9 @@ import re
 
 from bs4 import BeautifulSoup
 
-from models import *
+from .types import *
 
-from typing import Tuple, Dict
+from typing import Tuple
 
 
 class Parser:

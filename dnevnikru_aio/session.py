@@ -3,9 +3,9 @@ from typing import Optional, AsyncIterable
 from aiohttp import ClientResponse, ClientSession, ClientConnectionError
 import asyncio
 
-from parsers import Parser, ParserDiary, ParserBirthdayCalendar, ParserUsers
-from models import Diary, YearBirthday, Users
-from exceptions import *
+from .parsers import Parser, ParserDiary, ParserBirthdayCalendar, ParserUsers
+from .types import Diary, YearBirthday, Users
+from .exceptions import *
 
 
 class Session:
