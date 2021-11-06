@@ -3,7 +3,7 @@ from asyncio import get_event_loop
 
 from download_html import *
 from parsers import Parser, ParserDiary, ParserUsers, ParserBirthdayCalendar
-from models import *
+from types import *
 
 """
 Тесты парсеров.

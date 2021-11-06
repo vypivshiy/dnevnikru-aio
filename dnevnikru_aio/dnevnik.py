@@ -1,8 +1,8 @@
 from datetime import date
 from typing import AsyncIterable, Optional
 
-from models import Diary, YearBirthday, Users
-from session import DiaryAPI
+from .types import Diary, YearBirthday, Users
+from .session import DiaryAPI
 
 __version__ = "1.0"
 

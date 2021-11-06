@@ -16,7 +16,7 @@ date=  # дата, за которую гарантированно вернёт
 from aiohttp import ClientConnectionError
 
 from dnevnik import Dnevnik
-from models import Diary, Users, YearBirthday
+from types import Diary, Users, YearBirthday
 from exceptions import PageNotFound
 
 events = []
